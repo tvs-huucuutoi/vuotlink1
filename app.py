@@ -6,7 +6,7 @@ import socket
 import requests
 from bs4 import BeautifulSoup
 
-app = Flask(__link__)
+app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024  # Chỉ nhận payload URL nhỏ từ trình duyệt
 
 MAX_REDIRECTS = 8
