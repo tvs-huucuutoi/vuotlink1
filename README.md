@@ -1,34 +1,30 @@
-# LinkCode Tool – Web Edition
+# LinkCode Tool V2
 
-## Yêu cầu
-- Python 3.10 trở lên
-- Kết nối Internet để tải các thư viện và phân tích trang web công khai
+Ứng dụng Flask phân tích tối đa 10 URL công khai/lần, theo dõi redirect HTTP thông thường, trích xuất mã được gắn nhãn trong HTML/văn bản, hỗ trợ dán nội dung thủ công, lưu lịch sử SQLite, tìm kiếm/xóa và xuất CSV.
 
-## Cài đặt trên Windows
-Mở CMD hoặc PowerShell tại thư mục dự án:
-
+## Chạy local (Windows)
 ```powershell
 py -m venv .venv
 .venv\Scripts\activate
 py -m pip install -r requirements.txt
 py app.py
 ```
+Mở http://127.0.0.1:5000
 
-Mở trình duyệt tại:
+## Triển khai Render
+- Tạo Web Service từ repository GitHub.
+- Build: `pip install -r requirements.txt`
+- Start: `gunicorn app:app --workers 2 --threads 4 --timeout 45`
+- Health check: `/health`
+- Cấu hình mặc định dùng `DB_PATH=/tmp/linkcode_tool.sqlite3`; trên Render Free dữ liệu có thể mất khi khởi động lại/redeploy/instance thay đổi.
+- Muốn giữ lịch sử lâu dài: dùng gói Render hỗ trợ Persistent Disk, tạo disk mount tại `/var/data`, rồi đổi biến môi trường `DB_PATH=/var/data/linkcode_tool.sqlite3`. Không cần thay đổi mã nguồn.
 
-http://127.0.0.1:5000
+## Tính năng
+- Chế độ tự động: tối đa 10 URL/lần, redirect tối đa 8 bước, giới hạn nội dung 1,5 MB.
+- Chế độ hỗ trợ trình duyệt: mở link ở tab mới; người dùng tự thao tác rồi dán URL cuối hoặc nội dung công khai vào ô phân tích thủ công.
+- SQLite history, tìm kiếm, xóa từng mục/xóa tất cả, tải CSV.
+- Giao diện tiếng Việt responsive.
 
-Dừng máy chủ bằng `Ctrl + C` trong cửa sổ terminal.
-
-## Chức năng
-- Kiểm tra URL HTTP/HTTPS công khai.
-- Theo dõi tối đa 8 lần chuyển hướng.
-- Đọc tối đa 1 MB HTML/văn bản.
-- Trích xuất mã có nhãn rõ ràng như `Code: ABC123`, `Mã: ABC123`.
-- Hiển thị tiêu đề, mô tả, URL cuối, liên kết và phần xem trước văn bản.
-
-## Giới hạn
-Tool không giải CAPTCHA, không tự hoàn thành nhiệm vụ quảng cáo/xác minh, không đọc nội dung yêu cầu đăng nhập và không chạy JavaScript của trang. Tool chỉ phân tích nội dung HTTP công khai được máy chủ trả về.
-
-## Lưu ý triển khai
-Bản mẫu chỉ bind vào `127.0.0.1`, không phải máy chủ production. Trước khi triển khai công khai cần bổ sung kiểm soát truy cập, giới hạn tần suất, bảo vệ DNS rebinding ở tầng kết nối, logging và cấu hình máy chủ phù hợp.
+## Giới hạn an toàn
+Chỉ đọc nội dung HTTP/HTTPS công khai. Không vượt CAPTCHA, đăng nhập, paywall, nhiệm vụ quảng cáo hoặc xác minh; không đọc cookie/session của tab khác; không chạy JavaScript của trang. Trình duyệt không cho website này tự đọc tab khác nếu không có tiện ích mở rộng được cài đặt và cấp quyền.
+Không đưa URL chứa token riêng tư hoặc thông tin nhạy cảm vào công cụ. Đây là ứng dụng mẫu; khi mở công khai nên dùng egress firewall ở hạ tầng để chặn mạng nội bộ/metadata IP và cân nhắc xác thực người dùng, CAPTCHA chống lạm dụng và giới hạn tốc độ nâng cao.

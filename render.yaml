@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: linkcode-tool-v2
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 2 --threads 4 --timeout 45
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DB_PATH
+        value: /tmp/linkcode_tool.sqlite3
