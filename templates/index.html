@@ -1,69 +1,48 @@
 <!doctype html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>LinkCode Tool</title>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LinkCode Tool V2</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <main class="shell">
-    <header class="top">
-      <div class="logo">LC</div>
-      <div>
-        <h1>LinkCode Tool</h1>
-        <p>Phân tích URL · Theo dõi chuyển hướng · Trích xuất dữ liệu công khai</p>
-      </div>
-      <span class="version">WEB 1.0</span>
-    </header>
+<main class="shell">
+  <header class="top"><div class="logo">LC</div><div><h1>LinkCode Tool <span>V2</span></h1><p>Phân tích liên kết công khai · Hỗ trợ trình duyệt · Lịch sử SQLite</p></div></header>
+  <nav class="tabs"><button class="tab active" data-tab="auto">Tự động phân tích</button><button class="tab" data-tab="manual">Hỗ trợ trình duyệt</button><button class="tab" data-tab="history">Lịch sử</button></nav>
 
-    <section class="panel">
-      <label for="urlInput">Đường link cần phân tích</label>
-      <div class="input-row">
-        <input id="urlInput" type="url" placeholder="https://example.com/page" autocomplete="url">
-        <button id="analyzeBtn">Phân tích</button>
-      </div>
-      <p class="hint">Hỗ trợ trang HTTP/HTTPS công khai có nội dung HTML hoặc văn bản.</p>
-      <div id="message" class="message" role="status"></div>
-    </section>
+  <section id="auto" class="tab-panel active">
+    <article class="panel">
+      <label for="urls">Danh sách URL (mỗi dòng một link, tối đa 10)</label>
+      <textarea id="urls" rows="5" placeholder="https://example.com/page&#10;https://example.org/another"></textarea>
+      <div class="actions"><span class="hint">Theo dõi redirect HTTP thông thường và tìm mã có nhãn trong nội dung công khai.</span><button id="analyzeBtn">Phân tích URL</button></div>
+      <div id="autoMessage" class="message" role="status"></div>
+    </article>
+    <div id="results"></div>
+  </section>
 
-    <section id="results" class="results hidden">
-      <div class="stats">
-        <article class="stat"><span>HTTP STATUS</span><strong id="status">—</strong></article>
-        <article class="stat"><span>SỐ LẦN REDIRECT</span><strong id="redirectCount">0</strong></article>
-        <article class="stat"><span>MÃ TÌM THẤY</span><strong id="codeCount">0</strong></article>
-      </div>
+  <section id="manual" class="tab-panel">
+    <article class="panel">
+      <h2>Hỗ trợ thao tác trên trình duyệt</h2>
+      <p class="muted">Mở trang ở tab mới, tự thao tác trên trang đó. Khi đã tới nội dung công khai, hãy sao chép URL cuối hoặc phần văn bản cần kiểm tra rồi dán bên dưới.</p>
+      <label for="manualUrl">URL trang muốn mở</label>
+      <div class="input-row"><input id="manualUrl" placeholder="https://example.com"><button id="openTab">Mở tab mới</button></div>
+      <label for="sourceUrl">URL cuối (không bắt buộc)</label><input id="sourceUrl" placeholder="Dán URL hiện tại nếu muốn lưu cùng kết quả">
+      <label for="manualText">Nội dung công khai đã sao chép</label><textarea id="manualText" rows="7" placeholder="Dán văn bản hoặc HTML công khai tại đây..."></textarea>
+      <div class="actions"><span class="hint">Không tự đọc tab khác, cookie hoặc phiên đăng nhập.</span><button id="analyzeTextBtn">Phân tích nội dung dán</button></div>
+      <div id="manualMessage" class="message"></div>
+    </article>
+    <div id="manualResult"></div>
+  </section>
 
-      <article class="panel">
-        <div class="section-head"><h2>Thông tin trang</h2><button class="subtle" id="copyFinal">Sao chép URL đích</button></div>
-        <h3 id="pageTitle">—</h3>
-        <p id="description" class="muted"></p>
-        <div class="url-box" id="finalUrl"></div>
-      </article>
-
-      <article class="panel">
-        <h2>Chuỗi chuyển hướng</h2>
-        <div id="redirectList" class="stack muted">Không có chuyển hướng.</div>
-      </article>
-
-      <article class="panel">
-        <div class="section-head"><h2>Mã tìm thấy trong nội dung công khai</h2><button class="subtle" id="copyCodes">Sao chép mã</button></div>
-        <div id="codes" class="code-list muted">Không tìm thấy mã có nhãn phù hợp.</div>
-      </article>
-
-      <article class="panel">
-        <h2>Các liên kết trên trang</h2>
-        <div id="links" class="link-list muted">Không có liên kết.</div>
-      </article>
-
-      <article class="panel">
-        <h2>Xem trước văn bản</h2>
-        <pre id="preview"></pre>
-      </article>
-    </section>
-
-    <footer>LinkCode Tool · Chỉ phân tích nội dung trang công khai có thể truy cập trực tiếp.</footer>
-  </main>
-  <script src="{{ url_for('static', filename='app.js') }}"></script>
-</body>
-</html>
+  <section id="history" class="tab-panel">
+    <article class="panel">
+      <div class="section-head"><h2>Lịch sử phân tích</h2><div class="actions compact"><a class="button-link" href="/api/export.csv">Xuất CSV</a><button class="danger" id="clearHistory">Xóa tất cả</button></div></div>
+      <div class="input-row"><input id="historySearch" placeholder="Tìm URL, tiêu đề hoặc mã..."><button id="searchHistory">Tìm kiếm</button></div>
+      <div id="historyList" class="history-list"></div>
+      <div id="historyMessage" class="message"></div>
+    </article>
+  </section>
+  <footer>LinkCode Tool V2 · Chỉ phân tích nội dung công khai mà bạn có quyền truy cập.</footer>
+</main>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body></html>
